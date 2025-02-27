@@ -3,6 +3,7 @@
 #include "Joystick.h"
 #include "Wall.h"
 
+N5110 lcd(PC_7, PA_9, PB_10, PB_5, PB_3, PA_10);
 
 int* Wall(int x, int y) {
     lcd.drawRect(x, y, 2, 2, FILL_BLACK);
