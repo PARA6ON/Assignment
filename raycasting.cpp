@@ -1,6 +1,7 @@
 #include "mbed.h"
 #include "N5110.h"
 #include "Joystick.h"
+#include "Wall.h"
 #include <math.h>
 #define PI 3.1415926535
 
@@ -10,15 +11,10 @@
 Joystick joystick(PC_3, PC_2);  //attach and create joystick object
 N5110 lcd(PC_7, PA_9, PB_10, PB_5, PB_3, PA_10);
 //ray function
+void drawRays();
 
 void boundary(int x, int y);
 //Pin assignment format:  lcd(IO, Ser_TX, Ser_RX, MOSI, SCLK, PWM)  
-const int Fish[4][9]= {
-    { 1,0,0,1,1,1,1,1,0, },
-    { 1,1,1,1,1,1,1,0,1, },
-    { 1,1,1,1,1,1,1,1,1, },
-    { 1,0,0,1,1,1,1,1,0, },
-};
 
 float play_pos_x = 60;
 float play_pos_y = 34;
@@ -35,10 +31,9 @@ int main(){
         //map function
         lcd.clear();
         lcd.drawRect(0,0,84,48,FILL_TRANSPARENT);
-        lcd.drawRect(30,30,2,2,FILL_BLACK);
-        lcd.drawRect(14,28,2,2,FILL_BLACK);
+        int *wall1 = Wall(30,30);
         lcd.drawRect(play_pos_x, play_pos_y, 2, 2, FILL_BLACK);
-        lcd.drawLine(play_pos_x,play_pos_y, play_pos_x + 5 * play_pos_angle_x, play_pos_y + 5* play_pos_angle_y, 1);
+        lcd.drawLine(play_pos_x,play_pos_y, play_pos_x + 2 * play_pos_angle_x, play_pos_y + 2 * play_pos_angle_y, 1);
         //manually draw map can have some function that then randomises the position of the walls
         //using rndom number generators
          if(joystick.get_direction() == N){
@@ -100,11 +95,43 @@ int main(){
 
         boundary(play_pos_x,play_pos_y);
 
+
         lcd.refresh();
         ThisThread::sleep_for(30ms);
     }
 }
+void drawRays() {
+    int r, mx, my, mp, dof;
+    float rx,ry,ra,xo,yo;
+    ra = play_angle;
+    for (r = 0; r<1; r++) {
+        dof = 0;
+        float aTan = -1/tan(ra);
+        //looking down
+        if (ra>PI){
+            ry = (((int)play_pos_y>>6)<<6)-0.0001;
+            rx = (play_pos_y - ry) * aTan + play_pos_x;
+            yo = -64;
+            xo = -yo*aTan;
+        }
+        //looking up
+        if (ra<PI){
+            ry = (((int)play_pos_y>>6)<<6)+64;
+            rx = (play_pos_y - ry) * aTan + play_pos_x;
+            yo = 64;
+            xo = -yo*aTan;
+        }
+        //looking straight left or right
+        if (r == 0) {
+            rx = play_pos_x;
+            ry = play_pos_y;
+            dof = 8;
+        }
+        while(dof < 8) {
 
+        }
+    }
+}
 void boundary(int x, int y){
     if (x < 1 ){        //ensure that the point doesnt pass beyond the left hand side of the screen
         play_pos_x = 1;
